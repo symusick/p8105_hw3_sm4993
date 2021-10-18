@@ -1,0 +1,5 @@
+---
+title: "Data Science I: HW3"
+author: "Sydney Musick"
+output: github_document
+---
