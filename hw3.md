@@ -82,7 +82,7 @@ instacart_10000 = instacart %>%
   filter(n >= 10000) %>%
   arrange(department) %>%
   ggplot(aes(x = aisle, y = n)) + geom_point()
-  ggsave("aisle_scatter_plot.pdf", height = 4, width = 6)
+  ggsave("aisle_scatter_plot.pdf", height = 4, width = 15)
 ```
 
 Make a plot that shows the number of items ordered in each aisle Arrange
