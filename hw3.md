@@ -73,3 +73,17 @@ There are 134 aisles. The most commonly ordered from aisles are fresh
 vegetables, fresh fruits, and packaged vegetables fruits.
 
 ### Plot that shows the number of items ordered in each aisle
+
+``` r
+instacart_10000 = instacart %>%
+  select(aisle, department) %>%
+  count(aisle, department) %>% 
+  arrange(desc(n)) %>%
+  filter(n >= 10000) %>%
+  arrange(department) %>%
+  ggplot(aes(x = aisle, y = n)) + geom_point()
+  ggsave("aisle_scatter_plot.pdf", height = 4, width = 6)
+```
+
+Make a plot that shows the number of items ordered in each aisle Arrange
+aisles sensibly, and organize your plot so others can read it.
