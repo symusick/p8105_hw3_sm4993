@@ -3,3 +3,30 @@ title: "Data Science I: HW3"
 author: "Sydney Musick"
 output: github_document
 ---
+
+# Problem 1
+
+### Load packages
+```{r packages}
+library(tidyverse)
+library(dplyr)
+```
+
+### Load data
+```{r data load}
+library(p8105.datasets)
+data("instacart")
+```
+The `instacart` dataset has `r nrow(instacart)` observations (`r nrow(instacart)` rows and `r ncol(instacart)` columns). It includes variables `r names(instacart)`. The first observation in the dataset, for example, is product_id 49302, Bulgarian Yogurt, in the yogurt aisle (aisle_id 120).
+
+### How many aisles are there? Which is most ordered from?
+```{r aisles}
+max(instacart$aisle_id)
+instacart %>%
+  count(aisle) %>%
+  arrange(desc(n))
+```
+There are 134 aisles. The most commonly ordered from aisles are fresh vegetables, fresh fruits, and packaged vegetables fruits.
+
+### Plot that shows the number of items ordered in each aisle
+
