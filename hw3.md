@@ -80,7 +80,7 @@ instacart_10000 = instacart %>%
   count(aisle, department) %>% 
   arrange(desc(n)) %>%
   filter(n >= 10000)
-ggplot(instacart_10000, aes(x = aisle, y = n)) + geom_point() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+ggplot(instacart_10000, aes(x = aisle, y = n)) + geom_point() + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + labs(title = "Instacart Data Plot")
 ```
 
 ![](hw3_files/figure-gfm/items/aisle%20plot-1.png)<!-- -->
@@ -231,7 +231,7 @@ brfss_new = brfss %>%
   group_by(state, year) %>%
   mutate(data_value_avg = mean(data_value)) %>%
   select(year, state, data_value_avg)
-ggplot(brfss_new, aes(x = year, y = data_value_avg, group = state, color = state)) + geom_line() + theme(legend.position = "right")
+ggplot(brfss_new, aes(x = year, y = data_value_avg, group = state, color = state)) + geom_line() + theme(legend.position = "right") + labs(title = "BFSS Data Spaghetti Plot")
 ```
 
 ![](hw3_files/figure-gfm/new%20dataset-1.png)<!-- -->
@@ -247,7 +247,7 @@ brfss_2panel = brfss %>%
   filter(year %in% c("2006", "2010")) %>%
   filter(state == "NY") %>%
   group_by(year, state_county)
-ggplot(brfss_2panel, aes(x = response, y = data_value, group = state_county, color = state_county)) + geom_line() + facet_grid(. ~ year)
+ggplot(brfss_2panel, aes(x = response, y = data_value, group = state_county, color = state_county)) + geom_line() + facet_grid(. ~ year) + labs(title = "BRFSS 2 Panel Data Plots")
 ```
 
 ![](hw3_files/figure-gfm/two%20panel%20plot-1.png)<!-- -->
@@ -644,12 +644,56 @@ collected on a 63 year-old male with BMI 25, who was admitted to the
 Advanced Cardiac Care Center of Columbia University Medical Center and
 diagnosed with congestive heart failure (CHF).
 
-Traditional analyses of accelerometer data focus on the total activity
-over the day. Using your tidied dataset, aggregate accross minutes to
-create a total activity variable for each day, and create a table
-showing these totals. Are any trends apparent?
+### Data table for activity across each day
 
-Accelerometer data allows the inspection activity over the course of the
-day. Make a single-panel plot that shows the 24-hour activity time
-courses for each day and use color to indicate day of the week. Describe
-in words any patterns or conclusions you can make based on this graph.
+``` r
+accel_table = accel %>%
+  rowwise() %>%
+  mutate(activity_sum = sum(across(starts_with("activity")), na.rm = T)) %>%
+  group_by(day_id)
+
+summarise(accel_table, day_id, day, activity_sum)
+```
+
+    ## # A tibble: 35 × 3
+    ##    day_id day       activity_sum
+    ##     <dbl> <chr>            <dbl>
+    ##  1      1 Friday         480543.
+    ##  2      2 Monday          78828.
+    ##  3      3 Saturday       376254 
+    ##  4      4 Sunday         631105 
+    ##  5      5 Thursday       355924.
+    ##  6      6 Tuesday        307094.
+    ##  7      7 Wednesday      340115.
+    ##  8      8 Friday         568839 
+    ##  9      9 Monday         295431 
+    ## 10     10 Saturday       607175 
+    ## # … with 25 more rows
+
+Fridays consistently have the highest total activity for the day. There
+is also a slight downward trend in activity over the 35 days.
+
+### Plot that shows the 24-hour activity time courses for each day
+
+``` r
+accel_plot = accel %>%
+  pivot_longer(activity_1:activity_1440, names_to = "minute", values_to = "activity")
+ggplot(accel_plot, aes(x = minute , y = activity, group = day, color = day)) + geom_line() + theme(legend.position = "right") + 
+  labs(
+    title = "Accelerometry Data Plot", 
+    scale_x_continuous(
+      breaks = c("activity_1", "activity_500", "activit_1440"), 
+      labels = c("1", "500", "1440")))
+```
+
+![](hw3_files/figure-gfm/accel%20plot-1.png)<!-- -->
+
+``` r
+ggsave("accel_plot.pdf", height = 4, width = 30)
+```
+
+There appears to be a pattern of two peaks in activity: one in morning
+and one early afternoon. The morning peak appears to occur more on
+weekdays, while the afternoon peak is higher on weekends, particularly
+Sunday. For all days, there is a significant lull in activity around
+late morning to mid-day.

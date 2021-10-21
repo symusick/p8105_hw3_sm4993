@@ -36,7 +36,7 @@ instacart_10000 = instacart %>%
   count(aisle, department) %>% 
   arrange(desc(n)) %>%
   filter(n >= 10000)
-ggplot(instacart_10000, aes(x = aisle, y = n)) + geom_point() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
+ggplot(instacart_10000, aes(x = aisle, y = n)) + geom_point() + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + labs(title = "Instacart Data Plot")
 ggsave("aisle_scatter_plot.pdf", height = 4, width = 10)
 ```
 Most aisles have less than 40,000 orders. The exceptions are fresh vegetables, fresh fruits, packaged cheese, packaged vegetables fruits, and yogurt. Fresh vegetables and fresh fruits are extreme outliers, nearing 160,000 orders.
@@ -122,7 +122,7 @@ brfss_new = brfss %>%
   group_by(state, year) %>%
   mutate(data_value_avg = mean(data_value)) %>%
   select(year, state, data_value_avg)
-ggplot(brfss_new, aes(x = year, y = data_value_avg, group = state, color = state)) + geom_line() + theme(legend.position = "right")
+ggplot(brfss_new, aes(x = year, y = data_value_avg, group = state, color = state)) + geom_line() + theme(legend.position = "right") + labs(title = "BFSS Data Spaghetti Plot")
 ggsave("brfss_spaghetti_plot.pdf", height = 4, width = 10)
 ```
 
@@ -132,7 +132,7 @@ brfss_2panel = brfss %>%
   filter(year %in% c("2006", "2010")) %>%
   filter(state == "NY") %>%
   group_by(year, state_county)
-ggplot(brfss_2panel, aes(x = response, y = data_value, group = state_county, color = state_county)) + geom_line() + facet_grid(. ~ year)
+ggplot(brfss_2panel, aes(x = response, y = data_value, group = state_county, color = state_county)) + geom_line() + facet_grid(. ~ year) + labs(title = "BRFSS 2 Panel Data Plots")
 ggsave("brfss_2panel_plot.pdf", height = 4, width = 10)
 ```
 
@@ -153,9 +153,29 @@ accel =
 ```
 The `accel` dataset has `r nrow(accel)` observations. It includes variables `r names(accel)`. It is five weeks of accelerometer data collected on a 63 year-old male with BMI 25, who was admitted to the Advanced Cardiac Care Center of Columbia University Medical Center and diagnosed with congestive heart failure (CHF).
 
+### Data table for activity across each day
+```{r accel table across days}
+accel_table = accel %>%
+  rowwise() %>%
+  mutate(activity_sum = sum(across(starts_with("activity")), na.rm = T)) %>%
+  group_by(day_id)
 
-Traditional analyses of accelerometer data focus on the total activity over the day. Using your tidied dataset, aggregate accross minutes to create a total activity variable for each day, and create a table showing these totals. Are any trends apparent?
+summarise(accel_table, day_id, day, activity_sum)
+```  
+Fridays consistently have the highest total activity for the day. There is also a slight downward trend in activity over the 35 days.
 
-Accelerometer data allows the inspection activity over the course of the day. Make a single-panel plot that shows the 24-hour activity time courses for each day and use color to indicate day of the week. Describe in words any patterns or conclusions you can make based on this graph.
+### Plot that shows the 24-hour activity time courses for each day
+```{r accel plot}
+accel_plot = accel %>%
+  pivot_longer(activity_1:activity_1440, names_to = "minute", values_to = "activity")
+ggplot(accel_plot, aes(x = minute , y = activity, group = day, color = day)) + geom_line() + theme(legend.position = "right") + 
+  labs(
+    title = "Accelerometry Data Plot", 
+    scale_x_continuous(
+      breaks = c("activity_1", "activity_500", "activit_1440"), 
+      labels = c("1", "500", "1440")))
+ggsave("accel_plot.pdf", height = 4, width = 30)
+```
+There appears to be a pattern of two peaks in activity: one in morning and one early afternoon. The morning peak appears to occur more on weekdays, while the afternoon peak is higher on weekends, particularly Sunday. For all days, there is a significant lull in activity around late morning to mid-day.
 
 
