@@ -168,3 +168,90 @@ instacart_mean %>%
 
 The mean time of day to get Pink Lady Apples or Coffee Ice Cream is
 around mid-day to early afternoon most day.
+
+# Problem 2
+
+### Load data
+
+``` r
+data("brfss_smart2010")
+```
+
+### Clean data
+
+``` r
+brfss = brfss_smart2010 %>%
+  janitor::clean_names() %>%
+  rename(state = locationabbr, state_county = locationdesc, general_topic = class, specific_topic = topic) %>%
+  filter(specific_topic %in% c("Overall Health")) %>%
+  filter(response %in% c("Excellent", "Very good", "Good", "Fair", "Poor")) %>%
+  group_by(response) %>%
+  mutate(ordered(response, levels = c("Excellent", "Very good", "Good", "Fair", "Poor")))
+```
+
+### Which states were observed at 7 or more locations in 2002?
+
+``` r
+brfss_2002 = brfss %>%
+  filter(year == 2002) %>%
+  select(state, geo_location) %>%
+  group_by(state, geo_location) %>%
+  summarize(n_obs = n())
+```
+
+    ## Adding missing grouping variables: `response`
+
+    ## `summarise()` has grouped output by 'state'. You can override using the `.groups` argument.
+
+In 2002, CT, FL, MA, NC, NJ, and PA were observed at 7 or more
+locations.
+
+### Which states were observed at 7 or more locations in 2010?
+
+``` r
+brfss_2010 = brfss %>%
+  filter(year == 2010) %>%
+  select(state, geo_location) %>%
+  group_by(state, geo_location) %>%
+  summarize(n_obs = n())
+```
+
+    ## Adding missing grouping variables: `response`
+
+    ## `summarise()` has grouped output by 'state'. You can override using the `.groups` argument.
+
+In 2010, CA, CO, FL, MA, MD, NC, NE, NJ, NY, OH, PA, SC, TX, and WA were
+observed at 7 or more locations.
+
+### Dataset and spaghetti plot construction
+
+``` r
+brfss_new = brfss %>%
+  filter(response == "Excellent") %>%
+  group_by(state, year) %>%
+  mutate(data_value_avg = mean(data_value)) %>%
+  select(year, state, data_value_avg)
+ggplot(brfss_new, aes(x = year, y = data_value_avg, group = state, color = state)) + geom_line() + theme(legend.position = "right")
+```
+
+![](hw3_files/figure-gfm/new%20dataset-1.png)<!-- -->
+
+``` r
+ggsave("brfss_spaghetti_plot.pdf", height = 4, width = 10)
+```
+
+### Two pannel plot construction for 2006 and 2010
+
+``` r
+brfss_2panel = brfss %>%
+  filter(year %in% c("2006", "2010")) %>%
+  filter(state == "NY") %>%
+  group_by(year, state_county)
+ggplot(brfss_2panel, aes(x = response, y = data_value, group = state_county, color = state_county)) + geom_line() + facet_grid(. ~ year)
+```
+
+![](hw3_files/figure-gfm/two%20panel%20plot-1.png)<!-- -->
+
+``` r
+ggsave("brfss_2panel_plot.pdf", height = 4, width = 10)
+```
