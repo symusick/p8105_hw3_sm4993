@@ -79,11 +79,92 @@ instacart_10000 = instacart %>%
   select(aisle, department) %>%
   count(aisle, department) %>% 
   arrange(desc(n)) %>%
-  filter(n >= 10000) %>%
-  arrange(department) %>%
-  ggplot(aes(x = aisle, y = n)) + geom_point()
-  ggsave("aisle_scatter_plot.pdf", height = 4, width = 15)
+  filter(n >= 10000)
+ggplot(instacart_10000, aes(x = aisle, y = n)) + geom_point() + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
-Make a plot that shows the number of items ordered in each aisle Arrange
-aisles sensibly, and organize your plot so others can read it.
+![](hw3_files/figure-gfm/items/aisle%20plot-1.png)<!-- -->
+
+``` r
+ggsave("aisle_scatter_plot.pdf", height = 4, width = 10)
+```
+
+Most aisles have less than 40,000 orders. The exceptions are fresh
+vegetables, fresh fruits, packaged cheese, packaged vegetables fruits,
+and yogurt. Fresh vegetables and fresh fruits are extreme outliers,
+nearing 160,000 orders.
+
+### Table showing the three most popular items in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”
+
+``` r
+instacart_aisles = instacart %>%
+  filter(aisle %in% c("baking ingredients", "dog food care", "packaged vegetables fruits")) %>%
+  count(product_name, aisle) %>% 
+  arrange(desc(n)) %>%
+  filter(product_name %in% c("Organic Baby Spinach", "Organic Raspberries", "Organic Blueberries", "Light Brown Sugar", "Pure Baking Soda", "Cane Sugar", "Snack Sticks Chicken & Rice Recipe Dog Treats", "Organix Chicken & Brown Rice Recipe", "Small Dog Biscuits")) 
+summarise(instacart_aisles, aisle, product_name, n)
+```
+
+    ## # A tibble: 9 × 3
+    ##   aisle                      product_name                                      n
+    ##   <chr>                      <chr>                                         <int>
+    ## 1 packaged vegetables fruits Organic Baby Spinach                           9784
+    ## 2 packaged vegetables fruits Organic Raspberries                            5546
+    ## 3 packaged vegetables fruits Organic Blueberries                            4966
+    ## 4 baking ingredients         Light Brown Sugar                               499
+    ## 5 baking ingredients         Pure Baking Soda                                387
+    ## 6 baking ingredients         Cane Sugar                                      336
+    ## 7 dog food care              Snack Sticks Chicken & Rice Recipe Dog Treats    30
+    ## 8 dog food care              Organix Chicken & Brown Rice Recipe              28
+    ## 9 dog food care              Small Dog Biscuits                               26
+
+The most popular items in the packaged vegetables fruits aisle are
+Organic Baby Spinach (9784 orders), Organic Raspberries (5546 orders),
+and Organic Blueberries (4966 orders). The most popular items in the
+baking ingredients aisle are Light Brown Sugar (499 orders), Pure Baking
+Soda (387 orders), and Cane Sugar (336 orders). The most popular items
+in the dog food care aisle are Snack Sticks Chicken & Rice Recipe Dog
+Treats (30 orders), Organix Chicken & Brown Rice Recipe (28 orders), and
+Small Dog Biscuits (26 orders).
+
+### Mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered
+
+``` r
+instacart_mean = instacart %>%
+  filter(product_name %in% c("Pink Lady Apples", "Coffee Ice Cream")) %>%
+  mutate(order_dow = replace(order_dow, order_dow == "0", "Sunday")) %>%
+  mutate(order_dow = replace(order_dow, order_dow == "1", "Monday")) %>%
+  mutate(order_dow = replace(order_dow, order_dow == "2", "Tuesday")) %>%
+  mutate(order_dow = replace(order_dow, order_dow == "3", "Wednesday")) %>%
+  mutate(order_dow = replace(order_dow, order_dow == "4", "Thursday")) %>%
+  mutate(order_dow = replace(order_dow, order_dow == "5", "Friday")) %>%
+  mutate(order_dow = replace(order_dow, order_dow == "6", "Saturday")) %>%
+  select(order_dow, order_hour_of_day) %>%
+  group_by(order_dow, order_hour_of_day) %>%
+  summarize(n_obs = n()) %>%
+  summarize(mean_hour = mean(order_hour_of_day))
+```
+
+    ## `summarise()` has grouped output by 'order_dow'. You can override using the `.groups` argument.
+
+``` r
+day <- c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
+
+instacart_mean %>%
+  mutate(order_dow = factor(order_dow, levels = day)) %>%
+  arrange(order_dow) 
+```
+
+    ## # A tibble: 7 × 2
+    ##   order_dow mean_hour
+    ##   <fct>         <dbl>
+    ## 1 Sunday         14  
+    ## 2 Monday         13.8
+    ## 3 Tuesday        13.6
+    ## 4 Wednesday      15.5
+    ## 5 Thursday       12.3
+    ## 6 Friday         12.4
+    ## 7 Saturday       13.3
+
+The mean time of day to get Pink Lady Apples or Coffee Ice Cream is
+around mid-day to early afternoon most day.
