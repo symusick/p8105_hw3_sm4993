@@ -137,4 +137,25 @@ ggsave("brfss_2panel_plot.pdf", height = 4, width = 10)
 ```
 
 
+# Problem 3
+```{r dataset upload}
+accel =
+  janitor::clean_names(
+    read_csv("data_hw3/accel_data.csv", col_names = TRUE)) %>%
+  mutate(weekday_weekend = day) %>%
+  mutate(weekday_weekend = replace(weekday_weekend, weekday_weekend == "Sunday", "weekend")) %>%
+  mutate(weekday_weekend = replace(weekday_weekend, weekday_weekend == "Monday", "weekday")) %>%
+  mutate(weekday_weekend = replace(weekday_weekend, weekday_weekend == "Tuesday", "weekday")) %>%
+  mutate(weekday_weekend = replace(weekday_weekend, weekday_weekend == "Wednesday", "weekday")) %>%
+  mutate(weekday_weekend = replace(weekday_weekend, weekday_weekend == "Thursday", "weekday")) %>%
+  mutate(weekday_weekend = replace(weekday_weekend, weekday_weekend == "Friday", "weekday")) %>%
+  mutate(weekday_weekend = replace(weekday_weekend, weekday_weekend == "Saturday", "weekend"))
+```
+The `accel` dataset has `r nrow(accel)` observations. It includes variables `r names(accel)`. It is five weeks of accelerometer data collected on a 63 year-old male with BMI 25, who was admitted to the Advanced Cardiac Care Center of Columbia University Medical Center and diagnosed with congestive heart failure (CHF).
+
+
+Traditional analyses of accelerometer data focus on the total activity over the day. Using your tidied dataset, aggregate accross minutes to create a total activity variable for each day, and create a table showing these totals. Are any trends apparent?
+
+Accelerometer data allows the inspection activity over the course of the day. Make a single-panel plot that shows the 24-hour activity time courses for each day and use color to indicate day of the week. Describe in words any patterns or conclusions you can make based on this graph.
+
 
